@@ -1,0 +1,27 @@
+library(readr)
+data <- read.csv("eco_dev_data.csv",header = FALSE)
+head <- data[c(1,2),]
+data <- data[-c(1,2),]
+num <- 1:121
+data <- cbind(num,data)
+str(data)
+data[ ,3:15] <- as.numeric(unlist(data[ ,3:15]))
+sub_data <- data[ , 3:15]
+sub_data <- scale(sub_data)
+
+library(stats)
+library(factoextra)
+library(mt)
+eco_pca <- prcomp(sub_data)
+get_eig(eco_pca)
+fviz_eig(eco_pca, addlabels = TRUE)
+fviz_cos2(eco_pca, choice = "var", axes = 1:2)
+
+par(mfrow = c(2,2))
+fviz_pca_var(eco_pca, col.var = "black")
+fviz_pca_var(eco_pca, col.var = "cos2",
+             gradient.cols = c("black", "orange", "green"),
+             repel = TRUE)
+pca.outlier(sub_data, center = TRUE, scale=TRUE,conf.level = 0.975) 
+data[c(5,16,44,100,115),2]
+data[c(3,14,42,98,113),2]
