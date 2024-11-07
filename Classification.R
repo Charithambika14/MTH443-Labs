@@ -6,7 +6,7 @@
 library(MASS) # for LDA and QDA
 library(caret) # for data splitting and evaluation
 
-###(1)###
+################################################(1)###################################################
 # Load the dataset
 data <- read.csv("heart.csv")
 
@@ -52,7 +52,7 @@ cat("QDA - Training Data:", qda_train_misclassification, "\n")
 cat("QDA - Test Data:", qda_test_misclassification, "\n")
 
 
-###(3)###
+##############################################(3)##############################################
 # Load necessary libraries
 library(MASS)
 library(dplyr)
@@ -123,3 +123,79 @@ qda_test_misclassification_rate <- mean(qda_test_pred != test_labels)
 cat("QDA Misclassification Rate - Training:", qda_train_misclassification_rate, "\n")
 cat("QDA Misclassification Rate - Test:", qda_test_misclassification_rate, "\n")
 
+#########################################(2)#####################################################
+# Load necessary libraries
+library(dplyr)
+library(MASS)  # For LDA and QDA
+
+# Load the dataset
+currency_crisis <- read.csv("currency_crisis.csv",header = TRUE)
+labels <- currency_crisis[1,-1]
+currency_crisis <- currency_crisis[-1,]
+for(i in c(2:18)){
+  currency_crisis[,i] <- as.numeric(currency_crisis[,i])
+}
+
+# Data Preparation: Check and handle missing values if necessary
+# Assuming there are no missing values; if there are, handle them appropriately (e.g., by imputation).
+
+# Define the classification variable as factor for LDA and QDA
+currency_crisis$CRISIS.INDICATOR <- as.factor(currency_crisis$CRISIS.INDICATOR)
+
+# Scenario (i): Split data with the last 10% of rows as the test set
+set.seed(123)
+n <- nrow(currency_crisis)
+test_size <- floor(0.1 * n)
+train_data_i <- currency_crisis[1:(n - test_size),-1]
+test_data_i <- currency_crisis[(n - test_size + 1):n,-1]
+
+# Scenario (ii): Split data with every 10th observation in the test set
+test_indices_ii <- seq(10, n, by = 10)
+train_data_ii <- currency_crisis[-test_indices_ii,-1]
+test_data_ii <- currency_crisis[test_indices_ii,-1]
+
+# Function to calculate misclassification rate
+misclassification_rate <- function(pred, actual) {
+  mean(pred != actual)
+}
+
+# (a) Fisher Linear Discriminant Analysis
+# Train LDA model on both splits
+lda_model_i <- lda(CRISIS.INDICATOR ~ ., data = train_data_i)
+lda_model_ii <- lda(CRISIS.INDICATOR ~ ., data = train_data_ii)
+
+# Predictions and misclassification rates for Scenario (i)
+lda_pred_train_i <- predict(lda_model_i, train_data_i)$class
+lda_pred_test_i <- predict(lda_model_i, test_data_i)$class
+lda_train_misclassification_i <- misclassification_rate(lda_pred_train_i, train_data_i$CRISIS.INDICATOR)
+lda_test_misclassification_i <- misclassification_rate(lda_pred_test_i, test_data_i$CRISIS.INDICATOR)
+
+# Predictions and misclassification rates for Scenario (ii)
+lda_pred_train_ii <- predict(lda_model_ii, train_data_ii)$class
+lda_pred_test_ii <- predict(lda_model_ii, test_data_ii)$class
+lda_train_misclassification_ii <- misclassification_rate(lda_pred_train_ii, train_data_ii$CRISIS.INDICATOR)
+lda_test_misclassification_ii <- misclassification_rate(lda_pred_test_ii, test_data_ii$CRISIS.INDICATOR)
+
+# (b) Quadratic Discriminant Analysis
+# Train QDA model on both splits
+qda_model_i <- qda(CRISIS.INDICATOR ~ ., data = train_data_i)
+qda_model_ii <- qda(CRISIS.INDICATOR ~ ., data = train_data_ii)
+
+# Predictions and misclassification rates for Scenario (i)
+qda_pred_train_i <- predict(qda_model_i, train_data_i)$class
+qda_pred_test_i <- predict(qda_model_i, test_data_i)$class
+qda_train_misclassification_i <- misclassification_rate(qda_pred_train_i, train_data_i$CRISIS.INDICATOR)
+qda_test_misclassification_i <- misclassification_rate(qda_pred_test_i, test_data_i$CRISIS.INDICATOR)
+
+# Predictions and misclassification rates for Scenario (ii)
+qda_pred_train_ii <- predict(qda_model_ii, train_data_ii)$class
+qda_pred_test_ii <- predict(qda_model_ii, test_data_ii)$class
+qda_train_misclassification_ii <- misclassification_rate(qda_pred_train_ii, train_data_ii$CRISIS.INDICATOR)
+qda_test_misclassification_ii <- misclassification_rate(qda_pred_test_ii, test_data_ii$CRISIS.INDICATOR)
+
+# Display the results
+cat("Misclassification Rates:\n")
+cat("LDA - Scenario (i): Train =", lda_train_misclassification_i, ", Test =", lda_test_misclassification_i, "\n")
+cat("LDA - Scenario (ii): Train =", lda_train_misclassification_ii, ", Test =", lda_test_misclassification_ii, "\n")
+cat("QDA - Scenario (i): Train =", qda_train_misclassification_i, ", Test =", qda_test_misclassification_i, "\n")
+cat("QDA - Scenario (ii): Train =", qda_train_misclassification_ii, ", Test =", qda_test_misclassification_ii, "\n")
