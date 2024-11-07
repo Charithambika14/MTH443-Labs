@@ -74,7 +74,7 @@ get_mode <- function(x) {
 
 # Fill NA values in the 'Type' column with the mode
 wine_data <- wine_data %>%
-  mutate(Type = ifelse(is.na(Type), get_mode(Type), Type))
+  mutate(Type = ifelse(Type == "", get_mode(Type[1:130), Type))
 
 #wine_data <- wine_data %>%
 #  mutate(across(everything(), ~ ifelse(is.na(.), mean(., na.rm = TRUE), .)))
